@@ -4,15 +4,78 @@
   font-weight: 400;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   min-width: 320px;
-  min-height: 100vh;
   display: flex;
   background-color: #444;
 }
 
+.editor {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.toolbar {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px;
+}
+
+.toolbar__button {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  place-items: center;
+  border-radius: 4px;
+  padding: 8px;
+  background-color: #aaa;
+  border: 0;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.toolbar__button:hover,
+.toolbar__button:focus-visible {
+  background-color: #999;
+}
+
+.toolbar__button.active {
+  background-color: #88ade6;
+}
+
+.toolbar__button.active::before {
+  content: '🐹';
+  position: absolute;
+  right: -8px;
+  top: -8px;
+}
+
+.toolbar__button[data-shape='line']::after {
+  content: '';
+  width: 24px;
+  border: 1px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.toolbar__button[data-shape='square']::after {
+  content: '';
+  width: 24px;
+  height: 24px;
+  border: 2px solid currentColor;
+}
+
 canvas {
   background-color: #fff;
-  margin: auto;
 }
