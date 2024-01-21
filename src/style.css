@@ -76,6 +76,14 @@ body {
   border: 2px solid currentColor;
 }
 
+.toolbar__button[data-shape='circle']::after {
+  content: '';
+  width: 24px;
+  height: 24px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+
 canvas {
   background-color: #fff;
 }

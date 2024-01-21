@@ -1,6 +1,4 @@
-import { drawLine } from './line';
-import { drawSquare } from './square';
-import { Line, Point, Square } from './types';
+import { Figure } from './Figure';
 
 export const clearCanvas = (
   cx: CanvasRenderingContext2D,
@@ -12,52 +10,26 @@ export const clearCanvas = (
 export const drawAllFigures = (
   cx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
-  lines: Line[],
-  squares: Square[]
+  figures: Figure[]
 ) => {
   clearCanvas(cx, canvas);
 
-  lines.forEach((line) => drawLine(cx, line));
-  squares.forEach((square) => drawSquare(cx, square));
+  figures.forEach((figure) => figure.draw(cx));
 };
 
 export const drawCircle = (
   cx: CanvasRenderingContext2D,
-  center: Point,
+  x: number,
+  y: number,
   radius: number,
-  stroke?: number,
-  fill?: string
+  fillStyle?: string
 ) => {
   cx.beginPath();
-  cx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
+  cx.arc(x, y, radius, 0, 2 * Math.PI);
+  cx.stroke();
 
-  if (stroke) {
-    cx.lineWidth = stroke;
-    cx.stroke();
-  }
-
-  if (fill) {
-    cx.fillStyle = fill;
+  if (fillStyle) {
+    cx.fillStyle = fillStyle;
     cx.fill();
   }
 };
-
-export const addRulers = (
-  cx: CanvasRenderingContext2D,
-  corners: Point[],
-  radius: number
-) => {
-  corners.forEach((corner) => {
-    drawCircle(cx, corner, radius, 2, 'white');
-  });
-};
-
-export const isMouseOnRuler = (
-  e: MouseEvent,
-  rulerCenter: Point,
-  rulerRadius: number
-) =>
-  e.offsetX > rulerCenter.x - rulerRadius * 2 &&
-  e.offsetX < rulerCenter.x + rulerRadius * 2 &&
-  e.offsetY > rulerCenter.y - rulerRadius * 2 &&
-  e.offsetY < rulerCenter.y + rulerRadius * 2;

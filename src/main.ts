@@ -1,224 +1,94 @@
-import { Line, Square, Tool } from './types';
-import { drawAllFigures, isMouseOnRuler } from './helpers';
-import { activateBtn } from './tools';
-import { addLineRulers } from './line';
-import { addSquareRulers } from './square';
+import { drawAllFigures } from './helpers';
+import { Point } from './Point';
+import { Figure } from './Figure';
+import { Line } from './Line';
+import { Square } from './Square';
+import { Circle } from './Circle';
 import './style.css';
+
+type Tool = 'line' | 'square' | 'circle';
 
 const draw = () => {
   const canvas = document.querySelector('canvas');
   const cx = canvas?.getContext('2d');
-  const lineBtn = document.querySelector('.toolbar__button[data-shape="line"]');
-  const squareBtn = document.querySelector(
-    '.toolbar__button[data-shape="square"]'
-  );
+  const toolBtns = document.querySelectorAll('.toolbar__button[data-shape]');
 
   if (!canvas || !cx) return;
 
   cx.strokeStyle = 'blue';
   let selectedTool: Tool = 'line';
-  let isDrawStart = false;
-  let isDrawing = false;
-  let isStartPointMove = false;
-  let isEndPointMove = false;
-  let isSecondPointMove = false;
-  let isFourthPointMove = false;
+  cx.lineWidth = 1;
   const rulerRadius = 4;
-  const lines: Line[] = [];
-  const squares: Square[] = [];
+  const figures: Figure[] = [];
+  let selectedRuler: Point | null;
 
-  const lineBtnClickHandler = (e: Event) => {
-    activateBtn(e);
-    selectedTool = 'line';
-  };
+  const toolBtnClickHandler = (e: Event) => {
+    const activeToolBtn = document.querySelector('.toolbar__button.active');
+    const currentTarget = <HTMLButtonElement>e.currentTarget;
 
-  const squareBtnClickHandler = (e: Event) => {
-    activateBtn(e);
-    selectedTool = 'square';
+    activeToolBtn?.classList.remove('active');
+    currentTarget?.classList.add('active');
+
+    selectedTool = currentTarget.getAttribute('data-shape') as Tool;
   };
 
   const mousedownHandler = (e: MouseEvent) => {
+    if (figures.length) {
+      const lastFigure = figures[figures.length - 1];
+
+      const point = new Point(e.offsetX, e.offsetY);
+      selectedRuler = lastFigure.getSelectedRuler(point, rulerRadius);
+
+      if (selectedRuler) return;
+    }
+
+    const start = new Point(e.offsetX, e.offsetY);
+    const end = new Point(e.offsetX, e.offsetY);
+
+    selectedRuler = end;
+
     if (selectedTool === 'line') {
-      if (lines.length) {
-        const isMouseInStartPoint = isMouseOnRuler(
-          e,
-          lines[lines.length - 1].start,
-          rulerRadius
-        );
-        const isMouseInEndPoint = isMouseOnRuler(
-          e,
-          lines[lines.length - 1].end,
-          rulerRadius
-        );
-
-        if (isMouseInStartPoint) {
-          isStartPointMove = true;
-          return;
-        }
-
-        if (isMouseInEndPoint) {
-          isEndPointMove = true;
-          return;
-        }
-      }
-
-      isDrawStart = true;
-
-      lines.push({
-        start: { x: e.offsetX, y: e.offsetY },
-        end: { x: e.offsetX, y: e.offsetY },
-      });
+      figures.push(new Line(start, end));
     }
 
     if (selectedTool === 'square') {
-      if (squares.length) {
-        const lastSquare = squares[squares.length - 1];
-        const isMouseInStartPoint = isMouseOnRuler(
-          e,
-          lastSquare.start,
-          rulerRadius
-        );
-        const isMouseInEndPoint = isMouseOnRuler(
-          e,
-          lastSquare.end,
-          rulerRadius
-        );
-        const isMouseInSecondPoint = isMouseOnRuler(
-          e,
-          { x: lastSquare.end.x, y: lastSquare.start.y },
-          rulerRadius
-        );
-        const isMouseInFourthPoint = isMouseOnRuler(
-          e,
-          { x: lastSquare.start.x, y: lastSquare.end.y },
-          rulerRadius
-        );
+      figures.push(new Square(start, end));
+    }
 
-        if (isMouseInStartPoint) {
-          isStartPointMove = true;
-          return;
-        }
-
-        if (isMouseInEndPoint) {
-          isEndPointMove = true;
-          return;
-        }
-
-        if (isMouseInSecondPoint) {
-          isSecondPointMove = true;
-          return;
-        }
-
-        if (isMouseInFourthPoint) {
-          isFourthPointMove = true;
-          return;
-        }
-      }
-
-      isDrawStart = true;
-
-      squares.push({
-        start: { x: e.offsetX, y: e.offsetY },
-        end: { x: e.offsetX, y: e.offsetY },
-      });
+    if (selectedTool === 'circle') {
+      figures.push(new Circle(start, end));
     }
   };
 
   const mousemoveHandler = (e: MouseEvent) => {
-    if (selectedTool === 'line') {
-      const lastLine = lines[lines.length - 1];
+    if (selectedRuler) {
+      const lastFigure = figures[figures.length - 1];
 
-      if (isDrawStart || isEndPointMove) {
-        isDrawing = true;
+      selectedRuler.x = e.offsetX;
+      selectedRuler.y = e.offsetY;
 
-        lastLine.end.x = e.offsetX;
-        lastLine.end.y = e.offsetY;
-
-        drawAllFigures(cx, canvas, lines, squares);
-      }
-
-      if (isStartPointMove) {
-        isDrawing = true;
-
-        lastLine.start.x = e.offsetX;
-        lastLine.start.y = e.offsetY;
-
-        drawAllFigures(cx, canvas, lines, squares);
-      }
-    }
-
-    if (selectedTool === 'square') {
-      const lastSquare = squares[squares.length - 1];
-
-      if (isDrawStart || isEndPointMove) {
-        isDrawing = true;
-
-        lastSquare.end.x = e.offsetX;
-        lastSquare.end.y = e.offsetY;
-
-        drawAllFigures(cx, canvas, lines, squares);
-      }
-
-      if (isStartPointMove) {
-        isDrawing = true;
-
-        lastSquare.start.x = e.offsetX;
-        lastSquare.start.y = e.offsetY;
-
-        drawAllFigures(cx, canvas, lines, squares);
-      }
-
-      if (isSecondPointMove) {
-        isDrawing = true;
-
-        lastSquare.end.x = e.offsetX;
-        lastSquare.start.y = e.offsetY;
-
-        drawAllFigures(cx, canvas, lines, squares);
-      }
-
-      if (isFourthPointMove) {
-        isDrawing = true;
-
-        lastSquare.start.x = e.offsetX;
-        lastSquare.end.y = e.offsetY;
-
-        drawAllFigures(cx, canvas, lines, squares);
-      }
+      lastFigure.update(selectedRuler);
+      drawAllFigures(cx, canvas, figures);
     }
   };
 
   const mouseupHandler = () => {
-    if (selectedTool === 'line') {
-      isDrawStart = false;
-      isStartPointMove = false;
-      isEndPointMove = false;
+    const lastFigure = figures[figures.length - 1];
 
-      isDrawing && addLineRulers(cx, lines[lines.length - 1], rulerRadius);
+    lastFigure.drawRulers(cx, rulerRadius);
 
-      isDrawing = false;
-    }
-
-    if (selectedTool === 'square') {
-      isDrawStart = false;
-      isStartPointMove = false;
-      isEndPointMove = false;
-      isSecondPointMove = false;
-      isFourthPointMove = false;
-
-      isDrawing &&
-        addSquareRulers(cx, squares[squares.length - 1], rulerRadius);
-
-      isDrawing = false;
-    }
+    selectedRuler = null;
   };
 
-  lineBtn?.addEventListener('click', lineBtnClickHandler);
-  squareBtn?.addEventListener('click', squareBtnClickHandler);
+  toolBtns.forEach((toolBtn) => {
+    toolBtn?.addEventListener('click', toolBtnClickHandler);
+  });
 
   canvas?.addEventListener('mousedown', mousedownHandler);
   canvas?.addEventListener('mousemove', mousemoveHandler);
   canvas?.addEventListener('mouseup', mouseupHandler);
 };
 
-draw();
+document.addEventListener('DOMContentLoaded', () => {
+  draw();
+});
