@@ -104,10 +104,23 @@ const draw = () => {
     selectedFigure.drawRulers(cx, rulerRadius);
   };
 
+  const deleteKeydownHandler = (event: KeyboardEvent) => {
+    if (event.code === 'Delete') {
+      const index = figures.findIndex((figure) => figure === selectedFigure);
+
+      if (index === -1) return;
+
+      figures.splice(index, 1);
+      drawAllFigures(cx, canvas, figures);
+    }
+  };
+
   canvas?.addEventListener('mousedown', canvasMousedownHandler);
   canvas?.addEventListener('mousemove', canvasMousemoveHandler);
   canvas?.addEventListener('mouseup', canvasMouseupHandler);
   canvas?.addEventListener('click', canvasClickHandler);
+
+  window.addEventListener('keydown', deleteKeydownHandler);
 };
 
 document.addEventListener('DOMContentLoaded', draw);
