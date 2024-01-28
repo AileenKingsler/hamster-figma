@@ -38,4 +38,13 @@ export class Square extends Figure {
       this.end.y = this.fourthPoint.y;
     }
   }
+
+  isPointerInside(point: Point): boolean {
+    return (
+      ((point.x > this.start.x && point.x < this.end.x) ||
+        (point.x < this.start.x && point.x > this.end.x)) &&
+      ((point.y > this.start.y && point.y < this.end.y) ||
+        (point.y < this.start.y && point.y > this.end.y))
+    );
+  }
 }

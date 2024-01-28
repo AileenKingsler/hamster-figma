@@ -35,4 +35,12 @@ export class Circle extends Figure {
       );
     }
   }
+
+  isPointerInside(point: Point): boolean {
+    return (
+      Math.pow(this.start.x - point.x, 2) +
+        Math.pow(this.start.y - point.y, 2) <
+      Math.pow(this.radius, 2)
+    );
+  }
 }

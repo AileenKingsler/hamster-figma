@@ -39,4 +39,6 @@ export abstract class Figure {
       ) ?? null
     );
   }
+
+  abstract isPointerInside(point: Point): boolean;
 }

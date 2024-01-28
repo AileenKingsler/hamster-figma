@@ -16,11 +16,12 @@ const draw = () => {
   if (!canvas || !cx) return;
 
   cx.strokeStyle = 'blue';
-  let selectedTool: Tool = 'line';
   cx.lineWidth = 1;
+  let selectedTool: Tool = 'line';
   const rulerRadius = 4;
   const figures: Figure[] = [];
   let selectedRuler: Point | null;
+  let selectedFigure: Figure | null;
 
   const toolBtnClickHandler = (e: Event) => {
     const activeToolBtn = document.querySelector('.toolbar__button.active');
@@ -32,12 +33,10 @@ const draw = () => {
     selectedTool = currentTarget.getAttribute('data-shape') as Tool;
   };
 
-  const mousedownHandler = (e: MouseEvent) => {
-    if (figures.length) {
-      const lastFigure = figures[figures.length - 1];
-
+  const canvasMousedownHandler = (e: MouseEvent) => {
+    if (selectedFigure) {
       const point = new Point(e.offsetX, e.offsetY);
-      selectedRuler = lastFigure.getSelectedRuler(point, rulerRadius);
+      selectedRuler = selectedFigure.getSelectedRuler(point, rulerRadius);
 
       if (selectedRuler) return;
     }
@@ -58,24 +57,34 @@ const draw = () => {
     if (selectedTool === 'circle') {
       figures.push(new Circle(start, end));
     }
+
+    selectedFigure = figures[figures.length - 1];
   };
 
-  const mousemoveHandler = (e: MouseEvent) => {
+  const canvasMousemoveHandler = (e: MouseEvent) => {
     if (selectedRuler) {
-      const lastFigure = figures[figures.length - 1];
-
       selectedRuler.x = e.offsetX;
       selectedRuler.y = e.offsetY;
 
-      lastFigure.update(selectedRuler);
+      if (selectedFigure) {
+        selectedFigure.update(selectedRuler);
+      }
+
       drawAllFigures(cx, canvas, figures);
     }
   };
 
-  const mouseupHandler = () => {
-    const lastFigure = figures[figures.length - 1];
-
-    lastFigure.drawRulers(cx, rulerRadius);
+  const canvasMouseupHandler = () => {
+    if (selectedFigure) {
+      if (
+        selectedFigure.start.x === selectedFigure.end.x &&
+        selectedFigure.start.y === selectedFigure.end.y
+      ) {
+        figures.pop();
+      } else {
+        selectedFigure.drawRulers(cx, rulerRadius);
+      }
+    }
 
     selectedRuler = null;
   };
@@ -84,11 +93,21 @@ const draw = () => {
     toolBtn?.addEventListener('click', toolBtnClickHandler);
   });
 
-  canvas?.addEventListener('mousedown', mousedownHandler);
-  canvas?.addEventListener('mousemove', mousemoveHandler);
-  canvas?.addEventListener('mouseup', mouseupHandler);
+  const canvasClickHandler = (e: MouseEvent) => {
+    const point = new Point(e.offsetX, e.offsetY);
+    selectedFigure =
+      figures.findLast((figure) => figure.isPointerInside(point)) || null;
+
+    if (!selectedFigure) return;
+
+    drawAllFigures(cx, canvas, figures);
+    selectedFigure.drawRulers(cx, rulerRadius);
+  };
+
+  canvas?.addEventListener('mousedown', canvasMousedownHandler);
+  canvas?.addEventListener('mousemove', canvasMousemoveHandler);
+  canvas?.addEventListener('mouseup', canvasMouseupHandler);
+  canvas?.addEventListener('click', canvasClickHandler);
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-  draw();
-});
+document.addEventListener('DOMContentLoaded', draw);
