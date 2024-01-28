@@ -5,14 +5,15 @@ export class Square extends Figure {
   secondPoint: Point;
   fourthPoint: Point;
 
-  constructor(start: Point, end: Point) {
-    super(start, end);
+  constructor(start: Point, end: Point, lineWidth: number) {
+    super(start, end, lineWidth);
 
     this.secondPoint = new Point(this.end.x, this.start.y);
     this.fourthPoint = new Point(this.start.x, this.end.y);
   }
 
   draw(cx: CanvasRenderingContext2D) {
+    cx.lineWidth = this.lineWidth;
     cx.strokeRect(
       this.start.x,
       this.start.y,

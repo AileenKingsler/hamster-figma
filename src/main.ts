@@ -12,11 +12,14 @@ const draw = () => {
   const canvas = document.querySelector('canvas');
   const cx = canvas?.getContext('2d');
   const toolBtns = document.querySelectorAll('.toolbar__button[data-shape]');
+  const lineWidthSelect = document.querySelector<HTMLSelectElement>(
+    '.toolbar__select[data-property="line-width"]'
+  );
 
   if (!canvas || !cx) return;
 
   cx.strokeStyle = 'blue';
-  cx.lineWidth = 1;
+  let lineWidth = 1;
   let selectedTool: Tool = 'line';
   const rulerRadius = 4;
   const figures: Figure[] = [];
@@ -33,6 +36,18 @@ const draw = () => {
     selectedTool = currentTarget.getAttribute('data-shape') as Tool;
   };
 
+  const lineWidthSelectChangeHandler = (e: Event) => {
+    const currentTarget = <HTMLSelectElement>e.currentTarget;
+
+    lineWidth = +currentTarget.value;
+
+    if (selectedFigure) {
+      selectedFigure.lineWidth = lineWidth;
+      drawAllFigures(cx, canvas, figures);
+      selectedFigure.drawRulers(cx, rulerRadius);
+    }
+  };
+
   const canvasMousedownHandler = (e: MouseEvent) => {
     if (selectedFigure) {
       const point = new Point(e.offsetX, e.offsetY);
@@ -47,15 +62,15 @@ const draw = () => {
     selectedRuler = end;
 
     if (selectedTool === 'line') {
-      figures.push(new Line(start, end));
+      figures.push(new Line(start, end, lineWidth));
     }
 
     if (selectedTool === 'square') {
-      figures.push(new Square(start, end));
+      figures.push(new Square(start, end, lineWidth));
     }
 
     if (selectedTool === 'circle') {
-      figures.push(new Circle(start, end));
+      figures.push(new Circle(start, end, lineWidth));
     }
 
     selectedFigure = figures[figures.length - 1];
@@ -74,34 +89,34 @@ const draw = () => {
     }
   };
 
-  const canvasMouseupHandler = () => {
+  const canvasMouseupHandler = (e: MouseEvent) => {
     if (selectedFigure) {
       if (
         selectedFigure.start.x === selectedFigure.end.x &&
         selectedFigure.start.y === selectedFigure.end.y
       ) {
         figures.pop();
+
+        const point = new Point(e.offsetX, e.offsetY);
+        selectedFigure =
+          figures.findLast((figure) => figure.isPointerInside(point)) || null;
+
+        if (!selectedFigure) return;
+
+        lineWidth = selectedFigure.lineWidth;
+
+        if (lineWidthSelect) {
+          lineWidthSelect.value = lineWidth.toString();
+        }
+
+        drawAllFigures(cx, canvas, figures);
+        selectedFigure.drawRulers(cx, rulerRadius);
       } else {
         selectedFigure.drawRulers(cx, rulerRadius);
       }
     }
 
     selectedRuler = null;
-  };
-
-  toolBtns.forEach((toolBtn) => {
-    toolBtn?.addEventListener('click', toolBtnClickHandler);
-  });
-
-  const canvasClickHandler = (e: MouseEvent) => {
-    const point = new Point(e.offsetX, e.offsetY);
-    selectedFigure =
-      figures.findLast((figure) => figure.isPointerInside(point)) || null;
-
-    if (!selectedFigure) return;
-
-    drawAllFigures(cx, canvas, figures);
-    selectedFigure.drawRulers(cx, rulerRadius);
   };
 
   const deleteKeydownHandler = (event: KeyboardEvent) => {
@@ -115,12 +130,17 @@ const draw = () => {
     }
   };
 
+  window.addEventListener('keydown', deleteKeydownHandler);
+
   canvas?.addEventListener('mousedown', canvasMousedownHandler);
   canvas?.addEventListener('mousemove', canvasMousemoveHandler);
   canvas?.addEventListener('mouseup', canvasMouseupHandler);
-  canvas?.addEventListener('click', canvasClickHandler);
 
-  window.addEventListener('keydown', deleteKeydownHandler);
+  toolBtns.forEach((toolBtn) => {
+    toolBtn?.addEventListener('click', toolBtnClickHandler);
+  });
+
+  lineWidthSelect?.addEventListener('change', lineWidthSelectChangeHandler);
 };
 
 document.addEventListener('DOMContentLoaded', draw);

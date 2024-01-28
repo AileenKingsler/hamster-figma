@@ -4,6 +4,7 @@ import { distancePointFromLine } from './helpers';
 
 export class Line extends Figure {
   draw(cx: CanvasRenderingContext2D) {
+    cx.lineWidth = this.lineWidth;
     cx.beginPath();
     cx.moveTo(this.start.x, this.start.y);
     cx.lineTo(this.end.x, this.end.y);

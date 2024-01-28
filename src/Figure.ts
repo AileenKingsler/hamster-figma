@@ -4,11 +4,13 @@ import { drawCircle } from './helpers';
 export abstract class Figure {
   start: Point;
   end: Point;
+  lineWidth: number;
   rulers: Point[];
 
-  constructor(start: Point, end: Point) {
+  constructor(start: Point, end: Point, lineWidth: number) {
     this.start = start;
     this.end = end;
+    this.lineWidth = lineWidth;
     this.rulers = [];
   }
 
