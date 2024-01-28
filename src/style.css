@@ -33,7 +33,7 @@ body {
   color: #fff;
 }
 
-.toolbar__lineWidth {
+.toolbar__property {
   display: flex;
   flex-direction: column;
   align-items: flex-start;

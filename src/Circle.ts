@@ -5,8 +5,13 @@ import { drawCircle } from './helpers';
 export class Circle extends Figure {
   radius: number;
 
-  constructor(start: Point, end: Point, lineWidth: number) {
-    super(start, end, lineWidth);
+  constructor(
+    start: Point,
+    end: Point,
+    lineWidth: number,
+    strokeStyle: string
+  ) {
+    super(start, end, lineWidth, strokeStyle);
 
     this.radius = Math.sqrt(
       Math.pow(this.end.x - this.start.x, 2) +
@@ -16,6 +21,7 @@ export class Circle extends Figure {
 
   draw(cx: CanvasRenderingContext2D) {
     cx.lineWidth = this.lineWidth;
+    cx.strokeStyle = this.strokeStyle;
     drawCircle(cx, this.start.x, this.start.y, this.radius);
   }
 

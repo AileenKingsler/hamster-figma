@@ -15,11 +15,14 @@ const draw = () => {
   const lineWidthSelect = document.querySelector<HTMLSelectElement>(
     '.toolbar__select[data-property="line-width"]'
   );
+  const lineColorSelect = document.querySelector<HTMLInputElement>(
+    '.toolbar__select[data-property="line-color"]'
+  );
 
   if (!canvas || !cx) return;
 
-  cx.strokeStyle = 'blue';
-  let lineWidth = 1;
+  let lineWidth = Number(lineWidthSelect?.value) || 1;
+  let strokeStyle = lineColorSelect?.value || 'black';
   let selectedTool: Tool = 'line';
   const rulerRadius = 4;
   const figures: Figure[] = [];
@@ -48,6 +51,18 @@ const draw = () => {
     }
   };
 
+  const lineColorSelectChangeHandler = (e: Event) => {
+    const currentTarget = <HTMLInputElement>e.currentTarget;
+
+    strokeStyle = currentTarget.value;
+
+    if (selectedFigure) {
+      selectedFigure.strokeStyle = strokeStyle;
+      drawAllFigures(cx, canvas, figures);
+      selectedFigure.drawRulers(cx, rulerRadius);
+    }
+  };
+
   const canvasMousedownHandler = (e: MouseEvent) => {
     if (selectedFigure) {
       const point = new Point(e.offsetX, e.offsetY);
@@ -62,15 +77,15 @@ const draw = () => {
     selectedRuler = end;
 
     if (selectedTool === 'line') {
-      figures.push(new Line(start, end, lineWidth));
+      figures.push(new Line(start, end, lineWidth, strokeStyle));
     }
 
     if (selectedTool === 'square') {
-      figures.push(new Square(start, end, lineWidth));
+      figures.push(new Square(start, end, lineWidth, strokeStyle));
     }
 
     if (selectedTool === 'circle') {
-      figures.push(new Circle(start, end, lineWidth));
+      figures.push(new Circle(start, end, lineWidth, strokeStyle));
     }
 
     selectedFigure = figures[figures.length - 1];
@@ -104,9 +119,14 @@ const draw = () => {
         if (!selectedFigure) return;
 
         lineWidth = selectedFigure.lineWidth;
+        strokeStyle = selectedFigure.strokeStyle;
 
         if (lineWidthSelect) {
           lineWidthSelect.value = lineWidth.toString();
+        }
+
+        if (lineColorSelect) {
+          lineColorSelect.value = strokeStyle;
         }
 
         drawAllFigures(cx, canvas, figures);
@@ -125,6 +145,7 @@ const draw = () => {
 
       if (index === -1) return;
 
+      selectedFigure = null;
       figures.splice(index, 1);
       drawAllFigures(cx, canvas, figures);
     }
@@ -141,6 +162,7 @@ const draw = () => {
   });
 
   lineWidthSelect?.addEventListener('change', lineWidthSelectChangeHandler);
+  lineColorSelect?.addEventListener('input', lineColorSelectChangeHandler);
 };
 
 document.addEventListener('DOMContentLoaded', draw);

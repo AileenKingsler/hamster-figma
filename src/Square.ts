@@ -5,8 +5,13 @@ export class Square extends Figure {
   secondPoint: Point;
   fourthPoint: Point;
 
-  constructor(start: Point, end: Point, lineWidth: number) {
-    super(start, end, lineWidth);
+  constructor(
+    start: Point,
+    end: Point,
+    lineWidth: number,
+    strokeStyle: string
+  ) {
+    super(start, end, lineWidth, strokeStyle);
 
     this.secondPoint = new Point(this.end.x, this.start.y);
     this.fourthPoint = new Point(this.start.x, this.end.y);
@@ -14,6 +19,7 @@ export class Square extends Figure {
 
   draw(cx: CanvasRenderingContext2D) {
     cx.lineWidth = this.lineWidth;
+    cx.strokeStyle = this.strokeStyle;
     cx.strokeRect(
       this.start.x,
       this.start.y,

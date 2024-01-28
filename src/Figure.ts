@@ -5,12 +5,19 @@ export abstract class Figure {
   start: Point;
   end: Point;
   lineWidth: number;
+  strokeStyle: string;
   rulers: Point[];
 
-  constructor(start: Point, end: Point, lineWidth: number) {
+  constructor(
+    start: Point,
+    end: Point,
+    lineWidth: number,
+    strokeStyle: string
+  ) {
     this.start = start;
     this.end = end;
     this.lineWidth = lineWidth;
+    this.strokeStyle = strokeStyle;
     this.rulers = [];
   }
 

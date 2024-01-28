@@ -9,7 +9,7 @@
   <body>
     <div class="editor">
       <div class="toolbar">
-        <div class="toolbar__lineWidth">
+        <div class="toolbar__property">
           <label class="toolbar__label" for="line-width">Line width</label>
           <select
             id="line-width"
@@ -23,6 +23,16 @@
             <option>4</option>
             <option>5</option>
           </select>
+        </div>
+        <div class="toolbar__property">
+          <label class="toolbar__label" for="line-color">Line color</label>
+          <input
+            type="color"
+            id="line-color"
+            class="toolbar__select"
+            aria-label="Line color"
+            data-property="line-color"
+          />
         </div>
         <button
           type="button"
