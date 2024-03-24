@@ -1,12 +1,9 @@
 import { drawAllFigures } from './helpers';
 import { Point } from './Point';
 import { Figure } from './Figure';
-import { Line } from './Line';
-import { Square } from './Square';
-import { Circle } from './Circle';
-import './style.css';
+import { CircleTool, LineTool, SquareTool, Tool } from './Tool';
 
-type Tool = 'line' | 'square' | 'circle';
+import './style.css';
 
 const draw = () => {
   const canvas = document.querySelector('canvas');
@@ -21,11 +18,16 @@ const draw = () => {
 
   if (!canvas || !cx) return;
 
-  let lineWidth = Number(lineWidthSelect?.value) || 1;
-  let strokeStyle = lineColorSelect?.value || 'black';
-  let selectedTool: Tool = 'line';
+  const style = {
+    lineWidth: Number(lineWidthSelect?.value) || 1,
+    strokeStyle: lineColorSelect?.value || 'black',
+  };
   const rulerRadius = 4;
   const figures: Figure[] = [];
+  const lineTool = new LineTool(style, figures);
+  const squareTool = new SquareTool(style, figures);
+  const circleTool = new CircleTool(style, figures);
+  let selectedTool: Tool = lineTool;
   let selectedRuler: Point | null;
   let selectedFigure: Figure | null;
 
@@ -36,16 +38,26 @@ const draw = () => {
     activeToolBtn?.classList.remove('active');
     currentTarget?.classList.add('active');
 
-    selectedTool = currentTarget.getAttribute('data-shape') as Tool;
+    switch (currentTarget.getAttribute('data-shape')) {
+      case 'line':
+        selectedTool = lineTool;
+        break;
+      case 'square':
+        selectedTool = squareTool;
+        break;
+      case 'circle':
+        selectedTool = circleTool;
+        break;
+    }
   };
 
   const lineWidthSelectChangeHandler = (e: Event) => {
     const currentTarget = <HTMLSelectElement>e.currentTarget;
 
-    lineWidth = +currentTarget.value;
+    style.lineWidth = +currentTarget.value;
 
     if (selectedFigure) {
-      selectedFigure.lineWidth = lineWidth;
+      selectedFigure.lineWidth = style.lineWidth;
       drawAllFigures(cx, canvas, figures);
       selectedFigure.drawRulers(cx, rulerRadius);
     }
@@ -54,10 +66,10 @@ const draw = () => {
   const lineColorSelectChangeHandler = (e: Event) => {
     const currentTarget = <HTMLInputElement>e.currentTarget;
 
-    strokeStyle = currentTarget.value;
+    style.strokeStyle = currentTarget.value;
 
     if (selectedFigure) {
-      selectedFigure.strokeStyle = strokeStyle;
+      selectedFigure.strokeStyle = style.strokeStyle;
       drawAllFigures(cx, canvas, figures);
       selectedFigure.drawRulers(cx, rulerRadius);
     }
@@ -71,24 +83,10 @@ const draw = () => {
       if (selectedRuler) return;
     }
 
-    const start = new Point(e.offsetX, e.offsetY);
-    const end = new Point(e.offsetX, e.offsetY);
-
-    selectedRuler = end;
-
-    if (selectedTool === 'line') {
-      figures.push(new Line(start, end, lineWidth, strokeStyle));
-    }
-
-    if (selectedTool === 'square') {
-      figures.push(new Square(start, end, lineWidth, strokeStyle));
-    }
-
-    if (selectedTool === 'circle') {
-      figures.push(new Circle(start, end, lineWidth, strokeStyle));
-    }
+    selectedTool.onMouseDown(e);
 
     selectedFigure = figures[figures.length - 1];
+    selectedRuler = selectedFigure.end;
   };
 
   const canvasMousemoveHandler = (e: MouseEvent) => {
@@ -118,15 +116,15 @@ const draw = () => {
 
         if (!selectedFigure) return;
 
-        lineWidth = selectedFigure.lineWidth;
-        strokeStyle = selectedFigure.strokeStyle;
+        style.lineWidth = selectedFigure.lineWidth;
+        style.strokeStyle = selectedFigure.strokeStyle;
 
         if (lineWidthSelect) {
-          lineWidthSelect.value = lineWidth.toString();
+          lineWidthSelect.value = style.lineWidth.toString();
         }
 
         if (lineColorSelect) {
-          lineColorSelect.value = strokeStyle;
+          lineColorSelect.value = style.strokeStyle;
         }
 
         drawAllFigures(cx, canvas, figures);
